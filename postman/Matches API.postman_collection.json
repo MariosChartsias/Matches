@@ -1,0 +1,508 @@
+{
+  "info": {
+    "_postman_id": "f35abc1f-3c99-48a6-a113-b2d106da4d52",
+    "name": "Matches API",
+    "description": "A complete CRUD demonstration for the Matches API. Run the collection from top to bottom with the 'Matches API - Local' environment selected. Created match and odd IDs are captured automatically and reused by later requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - List matches",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response is an array', function () {",
+              "    pm.expect(pm.response.json()).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/matches",
+        "description": "Checks that the API is reachable and returns a JSON array."
+      },
+      "response": []
+    },
+    {
+      "name": "02 - Create match",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "const match = pm.response.json();",
+              "pm.collectionVariables.set('matchId', match.id);",
+              "",
+              "pm.test('Location header points to the new match', function () {",
+              "    pm.expect(pm.response.headers.get('Location')).to.eql('/api/v1/matches/' + match.id);",
+              "});",
+              "",
+              "pm.test('Created match has the submitted details', function () {",
+              "    pm.expect(match.description).to.eql('OSFP - PAO');",
+              "    pm.expect(match.sport).to.eql('FOOTBALL');",
+              "    pm.expect(match.odds).to.be.an('array').that.is.empty;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"OSFP - PAO\",\n  \"matchDate\": \"2026-09-10\",\n  \"matchTime\": \"20:30:00\",\n  \"teamA\": \"OSFP\",\n  \"teamB\": \"PAO\",\n  \"sport\": \"FOOTBALL\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/matches",
+        "description": "Creates a football match and stores its id in the matchId collection variable."
+      },
+      "response": []
+    },
+    {
+      "name": "03 - Get created match",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Correct match is returned', function () {",
+              "    const match = pm.response.json();",
+              "    pm.expect(String(match.id)).to.eql(pm.collectionVariables.get('matchId'));",
+              "    pm.expect(match.teamA).to.eql('OSFP');",
+              "    pm.expect(match.teamB).to.eql('PAO');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/matches/{{matchId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "04 - Update match",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Match details are updated', function () {",
+              "    const match = pm.response.json();",
+              "    pm.expect(match.description).to.eql('AEK - ARIS');",
+              "    pm.expect(match.sport).to.eql('BASKETBALL');",
+              "    pm.expect(match.teamA).to.eql('AEK');",
+              "    pm.expect(match.teamB).to.eql('ARIS');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"AEK - ARIS\",\n  \"matchDate\": \"2026-09-11\",\n  \"matchTime\": \"19:00:00\",\n  \"teamA\": \"AEK\",\n  \"teamB\": \"ARIS\",\n  \"sport\": \"BASKETBALL\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/matches/{{matchId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "05 - Add match odd",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "const odd = pm.response.json();",
+              "pm.collectionVariables.set('oddId', odd.id);",
+              "",
+              "pm.test('Specifier is normalized and linked to the match', function () {",
+              "    pm.expect(odd.specifier).to.eql('X');",
+              "    pm.expect(String(odd.matchId)).to.eql(pm.collectionVariables.get('matchId'));",
+              "    pm.expect(odd.odd).to.eql(1.5);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"specifier\": \"x\",\n  \"odd\": 1.500\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/matches/{{matchId}}/odds",
+        "description": "Creates an odd and stores its id in the oddId collection variable."
+      },
+      "response": []
+    },
+    {
+      "name": "06 - Get created odd",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Correct odd is returned', function () {",
+              "    const odd = pm.response.json();",
+              "    pm.expect(String(odd.id)).to.eql(pm.collectionVariables.get('oddId'));",
+              "    pm.expect(odd.specifier).to.eql('X');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/matches/{{matchId}}/odds/{{oddId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "07 - Update odd",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Odd is updated', function () {",
+              "    const odd = pm.response.json();",
+              "    pm.expect(odd.specifier).to.eql('2');",
+              "    pm.expect(odd.odd).to.eql(2.15);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"specifier\": \"2\",\n  \"odd\": 2.150\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/matches/{{matchId}}/odds/{{oddId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "08 - List match odds",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Updated odd is in the list', function () {",
+              "    const odds = pm.response.json();",
+              "    pm.expect(odds).to.be.an('array').with.lengthOf(1);",
+              "    pm.expect(odds[0].specifier).to.eql('2');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/matches/{{matchId}}/odds"
+      },
+      "response": []
+    },
+    {
+      "name": "09 - Reject duplicate specifier",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 409', function () {",
+              "    pm.response.to.have.status(409);",
+              "});",
+              "",
+              "pm.test('Conflict explains the duplicate', function () {",
+              "    const error = pm.response.json();",
+              "    pm.expect(error.status).to.eql(409);",
+              "    pm.expect(error.message).to.include('Specifier 2 already exists');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"specifier\": \"2\",\n  \"odd\": 2.500\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/matches/{{matchId}}/odds"
+      },
+      "response": []
+    },
+    {
+      "name": "10 - Reject invalid match",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 400', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('Validation errors identify both problems', function () {",
+              "    const error = pm.response.json();",
+              "    pm.expect(error.message).to.eql('Request validation failed');",
+              "    pm.expect(error.validationErrors).to.have.property('description');",
+              "    pm.expect(error.validationErrors).to.have.property('teamPairValid');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"\",\n  \"matchDate\": \"2026-09-12\",\n  \"matchTime\": \"18:00:00\",\n  \"teamA\": \"OSFP\",\n  \"teamB\": \"OSFP\",\n  \"sport\": \"FOOTBALL\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/matches"
+      },
+      "response": []
+    },
+    {
+      "name": "11 - Delete odd",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 204', function () {",
+              "    pm.response.to.have.status(204);",
+              "});",
+              "",
+              "pm.test('Response body is empty', function () {",
+              "    pm.expect(pm.response.text()).to.eql('');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/matches/{{matchId}}/odds/{{oddId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "12 - Delete match",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 204', function () {",
+              "    pm.response.to.have.status(204);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/matches/{{matchId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "13 - Confirm match was deleted",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 404', function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test('Error references the deleted match', function () {",
+              "    const error = pm.response.json();",
+              "    pm.expect(error.status).to.eql(404);",
+              "    pm.expect(error.message).to.include('Match with id ' + pm.collectionVariables.get('matchId'));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/matches/{{matchId}}"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "matchId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "oddId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
+

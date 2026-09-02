@@ -107,6 +107,13 @@ The tests cover the service rules and HTTP request/response behavior without
 requiring a running database. The Docker workflow is the end-to-end path against
 PostgreSQL.
 
+## Postman
+
+A ready-to-run collection and local environment are included in the
+[`postman`](postman) directory. The collection performs a complete 13-request CRUD
+workflow, carries created IDs between requests automatically, checks validation and
+conflict responses, and cleans up its test data at the end.
+
 ## Implementation notes
 
 The service uses a conventional controller-service-repository split. JPA handles
