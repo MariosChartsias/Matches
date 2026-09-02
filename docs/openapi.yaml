@@ -1,0 +1,361 @@
+openapi: 3.1.0
+info:
+  title: Matches API
+  version: 1.0.0
+  description: REST API for managing sports matches and their odds.
+  license:
+    name: Unlicensed
+servers:
+  - url: /
+    description: Server hosting the API
+tags:
+  - name: Matches
+    description: Match management operations
+  - name: Match odds
+    description: Operations for odds belonging to a match
+security: []
+
+paths:
+  /api/v1/matches:
+    get:
+      tags: [Matches]
+      summary: List all matches
+      operationId: listMatches
+      responses:
+        "200":
+          description: Matches ordered by date and time
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MatchResponse"
+    post:
+      tags: [Matches]
+      summary: Create a match
+      operationId: createMatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchRequest"
+      responses:
+        "201":
+          description: Match created
+          headers:
+            Location:
+              description: URI of the created match
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/v1/matches/{matchId}:
+    parameters:
+      - $ref: "#/components/parameters/MatchId"
+    get:
+      tags: [Matches]
+      summary: Get a match
+      operationId: getMatch
+      responses:
+        "200":
+          description: Match found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Matches]
+      summary: Replace a match's details
+      operationId: updateMatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchRequest"
+      responses:
+        "200":
+          description: Match updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Matches]
+      summary: Delete a match
+      description: The match's odds are deleted with it.
+      operationId: deleteMatch
+      responses:
+        "204":
+          description: Match deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/matches/{matchId}/odds:
+    parameters:
+      - $ref: "#/components/parameters/MatchId"
+    get:
+      tags: [Match odds]
+      summary: List a match's odds
+      operationId: listMatchOdds
+      responses:
+        "200":
+          description: Odds ordered by id
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MatchOddResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags: [Match odds]
+      summary: Add an odd to a match
+      operationId: createMatchOdd
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchOddRequest"
+      responses:
+        "201":
+          description: Odd created
+          headers:
+            Location:
+              description: URI of the created odd
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchOddResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /api/v1/matches/{matchId}/odds/{oddId}:
+    parameters:
+      - $ref: "#/components/parameters/MatchId"
+      - $ref: "#/components/parameters/OddId"
+    get:
+      tags: [Match odds]
+      summary: Get one odd
+      operationId: getMatchOdd
+      responses:
+        "200":
+          description: Odd found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchOddResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Match odds]
+      summary: Replace an odd
+      operationId: updateMatchOdd
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchOddRequest"
+      responses:
+        "200":
+          description: Odd updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchOddResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      tags: [Match odds]
+      summary: Delete an odd
+      operationId: deleteMatchOdd
+      responses:
+        "204":
+          description: Odd deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  parameters:
+    MatchId:
+      name: matchId
+      in: path
+      required: true
+      description: Match identifier
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    OddId:
+      name: oddId
+      in: path
+      required: true
+      description: Odd identifier
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+
+  responses:
+    BadRequest:
+      description: Invalid request body
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    Conflict:
+      description: Request conflicts with existing data
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+
+  schemas:
+    Sport:
+      type: string
+      enum: [FOOTBALL, BASKETBALL]
+
+    MatchRequest:
+      type: object
+      required:
+        - description
+        - matchDate
+        - matchTime
+        - teamA
+        - teamB
+        - sport
+      properties:
+        description:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: OSFP - PAO
+        matchDate:
+          type: string
+          format: date
+          example: 2026-09-10
+        matchTime:
+          type: string
+          pattern: "^[0-2][0-9]:[0-5][0-9]:[0-5][0-9]$"
+          example: "20:30:00"
+        teamA:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: OSFP
+        teamB:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: PAO
+        sport:
+          $ref: "#/components/schemas/Sport"
+
+    MatchOddRequest:
+      type: object
+      required: [specifier, odd]
+      properties:
+        specifier:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: X
+        odd:
+          type: number
+          format: double
+          exclusiveMinimum: 0
+          multipleOf: 0.001
+          example: 1.5
+
+    MatchResponse:
+      allOf:
+        - $ref: "#/components/schemas/MatchRequest"
+        - type: object
+          required: [id, odds]
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 1
+            odds:
+              type: array
+              items:
+                $ref: "#/components/schemas/MatchOddResponse"
+
+    MatchOddResponse:
+      allOf:
+        - $ref: "#/components/schemas/MatchOddRequest"
+        - type: object
+          required: [id, matchId]
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 1
+            matchId:
+              type: integer
+              format: int64
+              example: 1
+
+    ApiError:
+      type: object
+      required:
+        - timestamp
+        - status
+        - error
+        - message
+        - path
+        - validationErrors
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: Bad Request
+        message:
+          type: string
+          example: Request validation failed
+        path:
+          type: string
+          example: /api/v1/matches
+        validationErrors:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            description: must not be blank
