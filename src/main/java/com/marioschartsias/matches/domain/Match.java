@@ -3,7 +3,6 @@ package com.marioschartsias.matches.domain;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityGraph;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -47,7 +46,7 @@ public class Match {
 
     @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("id ASC")
-    private final List<MatchOdd> odds = new ArrayList<>();
+    private List<MatchOdd> odds = new ArrayList<>();
 
     protected Match() {
     }
@@ -99,4 +98,3 @@ public class Match {
         return Collections.unmodifiableList(odds);
     }
 }
-
