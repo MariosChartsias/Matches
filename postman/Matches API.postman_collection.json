@@ -5,7 +5,106 @@
     "description": "A complete CRUD demonstration for the Matches API. Run the collection from top to bottom with the 'Matches API - Local' environment selected. Created match and odd IDs are captured automatically and reused by later requests.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwtToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const isLoginRequest = pm.request.url.toString().includes('/api/v1/auth/login');",
+          "const token = pm.collectionVariables.get('jwtToken');",
+          "const expiresAt = Number(pm.collectionVariables.get('jwtExpiresAt') || 0);",
+          "const expiresSoon = expiresAt <= Date.now() + 30_000;",
+          "",
+          "if (!isLoginRequest && (!token || expiresSoon)) {",
+          "    try {",
+          "        console.log('JWT missing or expiring: requesting a new token');",
+          "        const response = await pm.sendRequest({",
+          "            url: pm.variables.replaceIn('{{baseUrl}}/api/v1/auth/login'),",
+          "            method: 'POST',",
+          "            header: { 'Content-Type': 'application/json' },",
+          "            body: {",
+          "                mode: 'raw',",
+          "                raw: JSON.stringify({",
+          "                    username: pm.variables.replaceIn('{{authUsername}}'),",
+          "                    password: pm.variables.replaceIn('{{authPassword}}')",
+          "                })",
+          "            }",
+          "        });",
+          "",
+          "        if (response.code !== 200) {",
+          "            throw new Error('Automatic login returned ' + response.code);",
+          "        }",
+          "",
+          "        const login = response.json();",
+          "        pm.collectionVariables.set('jwtToken', login.accessToken);",
+          "        pm.collectionVariables.set('jwtExpiresAt', String(Date.now() + login.expiresInSeconds * 1000));",
+          "        console.log('JWT refreshed successfully');",
+          "    } catch (error) {",
+          "        console.error('Automatic login failed', error);",
+          "    }",
+          "} else if (!isLoginRequest) {",
+          "    console.log('Using the saved JWT');",
+          "}"
+        ]
+      }
+    }
+  ],
   "item": [
+    {
+      "name": "00 - Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const login = pm.response.json();",
+              "pm.collectionVariables.set('jwtToken', login.accessToken);",
+              "pm.collectionVariables.set('jwtExpiresAt', String(Date.now() + login.expiresInSeconds * 1000));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{authUsername}}\",\n  \"password\": \"{{authPassword}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "description": "Gets a JWT and saves it as the collection's jwtToken variable."
+      },
+      "response": []
+    },
     {
       "name": "01 - List matches",
       "event": [
@@ -494,12 +593,32 @@
       "type": "string"
     },
     {
+      "key": "authUsername",
+      "value": "admin",
+      "type": "string"
+    },
+    {
+      "key": "authPassword",
+      "value": "admin",
+      "type": "string"
+    },
+    {
       "key": "matchId",
       "value": "",
       "type": "string"
     },
     {
       "key": "oddId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "jwtToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "jwtExpiresAt",
       "value": "",
       "type": "string"
     }
