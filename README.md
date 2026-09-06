@@ -39,8 +39,8 @@ The default connection settings can be overridden with environment variables:
 | Variable | Default |
 | --- | --- |
 | `DB_URL` | `jdbc:postgresql://localhost:5432/matches` |
-| `DB_USERNAME` | `matches` |
-| `DB_PASSWORD` | `matches` |
+| `DB_USERNAME` | `admin` |
+| `DB_PASSWORD` | `admin` |
 | `SERVER_PORT` | `8080` |
 
 The checked-in credentials are intended only for local development.
