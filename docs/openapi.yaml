@@ -9,13 +9,40 @@ servers:
   - url: /
     description: Server hosting the API
 tags:
+  - name: Authentication
+    description: Obtain access tokens
   - name: Matches
     description: Match management operations
   - name: Match odds
     description: Operations for odds belonging to a match
-security: []
+security:
+  - bearerAuth: []
 
 paths:
+  /api/v1/auth/login:
+    post:
+      tags: [Authentication]
+      summary: Get a JWT access token
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Access token issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
   /api/v1/matches:
     get:
       tags: [Matches]
@@ -222,6 +249,8 @@ components:
         minimum: 1
 
   responses:
+    Unauthorized:
+      description: Missing, expired, or invalid JWT
     BadRequest:
       description: Invalid request body
       content:
@@ -242,6 +271,31 @@ components:
             $ref: "#/components/schemas/ApiError"
 
   schemas:
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+          format: password
+          example: admin
+
+    TokenResponse:
+      type: object
+      required: [accessToken, tokenType, expiresInSeconds]
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        expiresInSeconds:
+          type: integer
+          example: 3600
+
     Sport:
       type: string
       enum: [FOOTBALL, BASKETBALL]
@@ -359,3 +413,9 @@ components:
             type: string
           example:
             description: must not be blank
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

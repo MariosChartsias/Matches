@@ -15,3 +15,11 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
 
+app:
+  auth:
+    username: ${AUTH_USERNAME:admin}
+    password: ${AUTH_PASSWORD:admin}
+  jwt:
+    secret: ${JWT_SECRET:bWF0Y2hlcy1hcGktbG9jYWwtand0LXNlY3JldC1rZXk=}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
+

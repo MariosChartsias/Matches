@@ -49,6 +49,7 @@ The checked-in credentials are intended only for local development.
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
+| `POST` | `/api/v1/auth/login` | Get a JWT access token |
 | `GET` | `/api/v1/matches` | List all matches, including their odds |
 | `POST` | `/api/v1/matches` | Create a match |
 | `GET` | `/api/v1/matches/{matchId}` | Get one match |
@@ -61,6 +62,28 @@ The checked-in credentials are intended only for local development.
 | `DELETE` | `/api/v1/matches/{matchId}/odds/{oddId}` | Delete an odd |
 
 The complete contract is in [`docs/openapi.yaml`](docs/openapi.yaml).
+
+## Authentication
+
+All `/api/v1/**` endpoints except `POST /api/v1/auth/login` require a JWT.
+For local development, obtain a token with the default `admin` / `admin`
+credentials:
+
+```bash
+curl -i -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin"}'
+```
+
+The response contains `accessToken`. Send it with every protected request:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+The username, password, signing key, and token lifetime are configurable with
+`AUTH_USERNAME`, `AUTH_PASSWORD`, `JWT_SECRET` (a Base64-encoded key), and
+`JWT_EXPIRATION_MINUTES`. The checked-in defaults are only for local development.
 
 ### Example
 
