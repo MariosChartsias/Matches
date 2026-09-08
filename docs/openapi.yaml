@@ -48,15 +48,17 @@ paths:
       tags: [Matches]
       summary: List all matches
       operationId: listMatches
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Size"
+        - $ref: "#/components/parameters/Sort"
       responses:
         "200":
           description: Matches ordered by date and time
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/MatchResponse"
+                $ref: "#/components/schemas/MatchPage"
     post:
       tags: [Matches]
       summary: Create a match
@@ -229,6 +231,34 @@ paths:
 
 components:
   parameters:
+    Page:
+      name: page
+      in: query
+      description: Zero-based page number
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    Size:
+      name: size
+      in: query
+      description: Number of matches per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Sort:
+      name: sort
+      in: query
+      description: Sort as property,direction; may be repeated
+      schema:
+        type: array
+        items:
+          type: string
+        default: ["matchDate,asc", "matchTime,asc", "id,asc"]
+      style: form
+      explode: true
     MatchId:
       name: matchId
       in: path
@@ -366,6 +396,28 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/MatchOddResponse"
+
+    MatchPage:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/MatchResponse"
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
 
     MatchOddResponse:
       allOf:

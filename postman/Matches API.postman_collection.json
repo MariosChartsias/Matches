@@ -117,8 +117,13 @@
               "    pm.response.to.have.status(200);",
               "});",
               "",
-              "pm.test('Response is an array', function () {",
-              "    pm.expect(pm.response.json()).to.be.an('array');",
+              "pm.test('Response is a page of matches', function () {",
+              "    const page = pm.response.json();",
+              "    pm.expect(page.content).to.be.an('array');",
+              "    pm.expect(page.page).to.eql(0);",
+              "    pm.expect(page.size).to.eql(20);",
+              "    pm.expect(page.totalElements).to.be.a('number');",
+              "    pm.expect(page.totalPages).to.be.a('number');",
               "});"
             ]
           }
@@ -133,7 +138,7 @@
           }
         ],
         "url": "{{baseUrl}}/api/v1/matches",
-        "description": "Checks that the API is reachable and returns a JSON array."
+        "description": "Checks that the API is reachable and returns the first page of matches."
       },
       "response": []
     },

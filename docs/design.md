@@ -55,9 +55,9 @@ This prevents persistence details from leaking into JSON and avoids recursive
 serialization across the match-to-odds relationship.
 
 Read operations use read-only transactions. Write operations have explicit
-transaction boundaries in the service layer. Match list/detail queries use a JPA
-entity graph so odds are fetched with their match instead of triggering an N+1
-query pattern.
+transaction boundaries in the service layer. Match detail queries use a JPA
+entity graph. The paginated match list loads odds in batches, allowing the database
+to apply the page limit without issuing one odds query per match.
 
 ## Validation and errors
 

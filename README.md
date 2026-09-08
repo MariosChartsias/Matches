@@ -50,7 +50,7 @@ The checked-in credentials are intended only for local development.
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | `POST` | `/api/v1/auth/login` | Get a JWT access token |
-| `GET` | `/api/v1/matches` | List all matches, including their odds |
+| `GET` | `/api/v1/matches` | List matches, including their odds, with pagination |
 | `POST` | `/api/v1/matches` | Create a match |
 | `GET` | `/api/v1/matches/{matchId}` | Get one match |
 | `PUT` | `/api/v1/matches/{matchId}` | Replace a match's details |
@@ -62,6 +62,10 @@ The checked-in credentials are intended only for local development.
 | `DELETE` | `/api/v1/matches/{matchId}/odds/{oddId}` | Delete an odd |
 
 The complete contract is in [`docs/openapi.yaml`](docs/openapi.yaml).
+
+The match list accepts zero-based `page` and `size` query parameters. The defaults
+are `page=0` and `size=20`, and page size is capped at 100. Matches are ordered by
+date, time, and id unless a `sort` parameter is supplied.
 
 ## Authentication
 
