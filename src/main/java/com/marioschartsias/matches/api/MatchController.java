@@ -2,8 +2,11 @@ package com.marioschartsias.matches.api;
 
 import com.marioschartsias.matches.api.dto.MatchRequest;
 import com.marioschartsias.matches.api.dto.MatchResponse;
+import com.marioschartsias.matches.api.dto.PageResponse;
 import com.marioschartsias.matches.service.MatchService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/matches")
@@ -28,8 +30,10 @@ public class MatchController {
     }
 
     @GetMapping
-    public List<MatchResponse> findAll() {
-        return matchService.findAll();
+    public PageResponse<MatchResponse> findAll(
+            @PageableDefault(size = 20, sort = {"matchDate", "matchTime", "id"}) Pageable pageable
+    ) {
+        return matchService.findAll(pageable);
     }
 
     @GetMapping("/{id}")

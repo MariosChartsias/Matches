@@ -2,13 +2,13 @@ package com.marioschartsias.matches.service;
 
 import com.marioschartsias.matches.api.dto.MatchRequest;
 import com.marioschartsias.matches.api.dto.MatchResponse;
+import com.marioschartsias.matches.api.dto.PageResponse;
 import com.marioschartsias.matches.domain.Match;
 import com.marioschartsias.matches.exception.ResourceNotFoundException;
 import com.marioschartsias.matches.repository.MatchRepository;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -20,10 +20,8 @@ public class MatchService {
         this.matchRepository = matchRepository;
     }
 
-    public List<MatchResponse> findAll() {
-        return matchRepository.findAllWithOdds().stream()
-                .map(MatchResponse::from)
-                .toList();
+    public PageResponse<MatchResponse> findAll(Pageable pageable) {
+        return PageResponse.from(matchRepository.findAll(pageable).map(MatchResponse::from));
     }
 
     public MatchResponse findById(Long id) {

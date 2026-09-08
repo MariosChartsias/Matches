@@ -2,6 +2,7 @@ package com.marioschartsias.matches.service;
 
 import com.marioschartsias.matches.api.dto.MatchRequest;
 import com.marioschartsias.matches.api.dto.MatchResponse;
+import com.marioschartsias.matches.api.dto.PageResponse;
 import com.marioschartsias.matches.domain.Match;
 import com.marioschartsias.matches.domain.Sport;
 import com.marioschartsias.matches.exception.ResourceNotFoundException;
@@ -11,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -35,16 +38,22 @@ class MatchServiceTest {
     private MatchService matchService;
 
     @Test
-    void returnsMatchesInRepositoryOrder() {
+    void returnsAPageOfMatches() {
         Match first = match(1L, "OSFP - PAO");
         Match second = match(2L, "AEK - ARIS");
-        when(matchRepository.findAllWithOdds()).thenReturn(List.of(first, second));
+        PageRequest pageRequest = PageRequest.of(1, 2);
+        when(matchRepository.findAll(pageRequest))
+                .thenReturn(new PageImpl<>(List.of(first, second), pageRequest, 7));
 
-        List<MatchResponse> result = matchService.findAll();
+        PageResponse<MatchResponse> result = matchService.findAll(pageRequest);
 
-        assertThat(result).extracting(MatchResponse::id).containsExactly(1L, 2L);
-        assertThat(result).extracting(MatchResponse::description)
+        assertThat(result.content()).extracting(MatchResponse::id).containsExactly(1L, 2L);
+        assertThat(result.content()).extracting(MatchResponse::description)
                 .containsExactly("OSFP - PAO", "AEK - ARIS");
+        assertThat(result.page()).isEqualTo(1);
+        assertThat(result.size()).isEqualTo(2);
+        assertThat(result.totalElements()).isEqualTo(7);
+        assertThat(result.totalPages()).isEqualTo(4);
     }
 
     @Test

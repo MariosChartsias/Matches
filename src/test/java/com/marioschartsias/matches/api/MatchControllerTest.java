@@ -1,6 +1,7 @@
 package com.marioschartsias.matches.api;
 
 import com.marioschartsias.matches.api.dto.MatchResponse;
+import com.marioschartsias.matches.api.dto.PageResponse;
 import com.marioschartsias.matches.api.error.GlobalExceptionHandler;
 import com.marioschartsias.matches.domain.Sport;
 import com.marioschartsias.matches.exception.ResourceNotFoundException;
@@ -10,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -19,6 +22,8 @@ import java.time.LocalTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -40,7 +45,44 @@ class MatchControllerTest {
         mockMvc = MockMvcBuilders
                 .standaloneSetup(new MatchController(matchService))
                 .setControllerAdvice(new GlobalExceptionHandler())
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
                 .build();
+    }
+
+    @Test
+    void returnsARequestedPageOfMatches() throws Exception {
+        MatchResponse match = new MatchResponse(
+                1L,
+                "OSFP - PAO",
+                LocalDate.of(2026, 9, 10),
+                LocalTime.of(20, 30),
+                "OSFP",
+                "PAO",
+                Sport.FOOTBALL,
+                List.of()
+        );
+        when(matchService.findAll(any(Pageable.class)))
+                .thenReturn(new PageResponse<>(List.of(match), 2, 5, 13, 3));
+
+        mockMvc.perform(get("/api/v1/matches")
+                        .param("page", "2")
+                        .param("size", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(1))
+                .andExpect(jsonPath("$.page").value(2))
+                .andExpect(jsonPath("$.size").value(5))
+                .andExpect(jsonPath("$.totalElements").value(13))
+                .andExpect(jsonPath("$.totalPages").value(3));
+
+        verify(matchService).findAll(argThat(pageable ->
+                pageable.getPageNumber() == 2
+                        && pageable.getPageSize() == 5
+                        && pageable.getSort().stream()
+                        .map(order -> order.getProperty())
+                        .toList()
+                        .equals(List.of("matchDate", "matchTime", "id"))
+                        && pageable.getSort().stream().allMatch(order -> order.isAscending())
+        ));
     }
 
     @Test
