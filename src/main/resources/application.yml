@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: matches-api
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/matches}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  data:
+    web:
+      pageable:
+        max-page-size: 100
+
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  auth:
+    username: ${AUTH_USERNAME:admin}
+    password: ${AUTH_PASSWORD:admin}
+  jwt:
+    secret: ${JWT_SECRET:bWF0Y2hlcy1hcGktbG9jYWwtand0LXNlY3JldC1rZXk=}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
