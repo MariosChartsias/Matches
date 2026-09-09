@@ -37,8 +37,9 @@ outside the API: valid sports, different teams, positive odds, unique specifiers
 per match, and referential integrity. Deleting a match cascades to its odds.
 
 Dates and times are deliberately stored separately because they are separate
-fields in the requested model. The API uses ISO-8601 representations (`YYYY-MM-DD`
-and `HH:mm:ss`) and Java's `LocalDate`/`LocalTime`; no timezone is implied.
+fields in the requested model. The API uses ISO-8601 local date and time values
+(for example, `2026-09-10` and `20:30:00`) and Java's `LocalDate`/`LocalTime`; no
+timezone is implied.
 
 ## Application structure
 
@@ -92,6 +93,7 @@ its health check, and then starts the API.
 
 Production deployments should provide database credentials through a secret
 manager, pin container images by digest, terminate TLS at the platform edge, and
-add authentication according to the consuming system's requirements. Those
-concerns are intentionally outside this assessment's CRUD scope.
+replace the local single-user credentials with an appropriate identity and
+authorization system. The built-in JWT flow is intentionally small and suitable
+for demonstrating authenticated access, not for managing production users.
 

@@ -54,11 +54,13 @@ paths:
         - $ref: "#/components/parameters/Sort"
       responses:
         "200":
-          description: Matches ordered by date and time
+          description: A page of matches; the default order is date, time, then id
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/MatchPage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
     post:
       tags: [Matches]
       summary: Create a match
@@ -83,6 +85,8 @@ paths:
                 $ref: "#/components/schemas/MatchResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
   /api/v1/matches/{matchId}:
     parameters:
@@ -98,6 +102,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MatchResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
     put:
@@ -119,6 +125,8 @@ paths:
                 $ref: "#/components/schemas/MatchResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
     delete:
@@ -129,6 +137,8 @@ paths:
       responses:
         "204":
           description: Match deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
 
@@ -148,6 +158,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/MatchOddResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
     post:
@@ -174,6 +186,8 @@ paths:
                 $ref: "#/components/schemas/MatchOddResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
         "409":
@@ -194,6 +208,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MatchOddResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
     put:
@@ -215,6 +231,8 @@ paths:
                 $ref: "#/components/schemas/MatchOddResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
         "409":
@@ -226,6 +244,8 @@ paths:
       responses:
         "204":
           description: Odd deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
 
@@ -351,7 +371,8 @@ components:
           example: 2026-09-10
         matchTime:
           type: string
-          pattern: "^[0-2][0-9]:[0-5][0-9]:[0-5][0-9]$"
+          description: ISO-8601 local time with no timezone
+          pattern: "^(?:[01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9](?:\\.[0-9]{1,9})?)?$"
           example: "20:30:00"
         teamA:
           type: string
@@ -379,6 +400,7 @@ components:
           type: number
           format: double
           exclusiveMinimum: 0
+          maximum: 9999999.999
           multipleOf: 0.001
           example: 1.5
 

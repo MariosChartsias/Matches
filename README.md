@@ -32,7 +32,8 @@ docker compose up -d database
 ./mvnw spring-boot:run
 ```
 
-On Windows, use `mvnw.cmd spring-boot:run` for the second command.
+On Windows, use `mvnw.cmd spring-boot:run` in Command Prompt or
+`.\mvnw.cmd spring-boot:run` in PowerShell for the second command.
 
 The default connection settings can be overridden with environment variables:
 
@@ -85,6 +86,12 @@ The response contains `accessToken`. Send it with every protected request:
 Authorization: Bearer <accessToken>
 ```
 
+The examples below use that value as the `TOKEN` environment variable:
+
+```bash
+TOKEN="<accessToken>"
+```
+
 The username, password, signing key, and token lifetime are configurable with
 `AUTH_USERNAME`, `AUTH_PASSWORD`, `JWT_SECRET` (a Base64-encoded key), and
 `JWT_EXPIRATION_MINUTES`. The checked-in defaults are only for local development.
@@ -95,6 +102,7 @@ Create a football match:
 
 ```bash
 curl -i -X POST http://localhost:8080/api/v1/matches \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "description": "OSFP - PAO",
@@ -109,7 +117,10 @@ curl -i -X POST http://localhost:8080/api/v1/matches \
 Add an odd to the newly created match:
 
 ```bash
-curl -i -X POST http://localhost:8080/api/v1/matches/1/odds \
+MATCH_ID="<id from the create response>"
+
+curl -i -X POST "http://localhost:8080/api/v1/matches/$MATCH_ID/odds" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"specifier": "X", "odd": 1.500}'
 ```
@@ -138,15 +149,15 @@ PostgreSQL.
 
 A ready-to-run collection and local environment are included in the
 [`postman`](postman) directory. The collection performs a complete 13-request CRUD
-workflow, carries created IDs between requests automatically, checks validation and
-conflict responses, and cleans up its test data at the end.
+workflow plus login, carries created IDs between requests automatically, checks
+validation and conflict responses, and cleans up its test data at the end.
 
 ## Implementation notes
 
 The service uses a conventional controller-service-repository split. JPA handles
 persistence, while Flyway owns schema creation and changes. Match responses embed
-their odds; repository entity graphs load those collections in the same query to
-avoid per-match database calls.
+their odds; match detail queries use an entity graph, while paginated list queries
+batch-load odds to avoid a query for every match.
 
 See [`docs/design.md`](docs/design.md) for the main design decisions, data model,
 validation rules, and trade-offs.
